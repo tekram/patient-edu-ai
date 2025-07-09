@@ -112,9 +112,43 @@
         #procedureCodes, #physicianNotes {
             max-width: 400px;
         }
+        .uams-header {
+            display: flex;
+            align-items: center;
+            gap: 1.2em;
+            background: #fff;
+            border-bottom: 4px solid #a41e34;
+            padding: 1.2em 2em 1.2em 2em;
+            margin-bottom: 1.5em;
+            box-shadow: 0 2px 8px 0 rgba(60,72,100,0.06);
+        }
+        .uams-logo {
+            height: 48px;
+            width: auto;
+        }
+        .uams-title {
+            font-size: 1.45em;
+            font-weight: 700;
+            color: #a41e34;
+            letter-spacing: 0.5px;
+        }
+        .uams-footer {
+            text-align: center;
+            color: #a41e34;
+            font-size: 1em;
+            font-weight: 500;
+            margin-top: 2.5em;
+            padding: 1.2em 0 1.2em 0;
+            background: #f8f8fa;
+            border-top: 2px solid #a41e34;
+        }
     </style>
 </head>
 <body>
+    <div class="uams-header">
+        <img src="https://news.uams.edu/wp-content/uploads/2020/09/UAMS_Logo_Horizontal_RGB.png" alt="UAMS Logo" class="uams-logo">
+        <div class="uams-title">University of Arkansas for Medical Sciences</div>
+    </div>
     <div class="container">
         <h1>After Visit Summary Education</h1>
         <form id="eduForm">
@@ -161,6 +195,9 @@
             <div class="error" id="followupError"></div>
         </div>
     </div>
+    <footer class="uams-footer">
+        <span>© 2024 University of Arkansas for Medical Sciences (UAMS) Health Care System</span>
+    </footer>
     <script>
         const form = document.getElementById('eduForm');
         const resultDiv = document.getElementById('result');
