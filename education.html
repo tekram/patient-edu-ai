@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Education (Standalone)</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+            background: linear-gradient(120deg, #f0f4f9 0%, #e9eafc 100%);
+            margin: 0;
+            padding: 0;
+            min-height: 180vh;
+        }
+        .container {
+            max-width: 650px;
+            margin: 48px auto;
+            background: #fff;
+            padding: 2.5em 2em 2em 2em;
+            border-radius: 18px;
+            box-shadow: 0 6px 32px 0 rgba(60,72,100,0.13), 0 1.5px 4px 0 rgba(60,72,100,0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5em;
+            min-height: 1200px;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.1em;
+            font-weight: 700;
+            letter-spacing: -1px;
+            color: #2d3a5a;
+            margin-bottom: 0.5em;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.1em;
+        }
+        label {
+            font-weight: 600;
+            color: #3a4668;
+            margin-bottom: 0.3em;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 0.7em 1em;
+            border-radius: 7px;
+            border: 1.5px solid #d1d5db;
+            background: #f8fafc;
+            font-size: 1em;
+            transition: border 0.2s, box-shadow 0.2s;
+            margin-top: 0.2em;
+        }
+        input:focus, textarea:focus {
+            border: 1.5px solid #6c63ff;
+            outline: none;
+            box-shadow: 0 0 0 2px #e0e7ff;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+        button {
+            margin-top: 0.5em;
+            padding: 0.85em 2em;
+            background: linear-gradient(90deg, #6c63ff 0%, #5ad1e6 100%);
+            color: #fff;
+            border: none;
+            border-radius: 7px;
+            font-size: 1.08em;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 2px 8px 0 rgba(108,99,255,0.08);
+            transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+        }
+        button:hover:not(:disabled) {
+            background: linear-gradient(90deg, #5ad1e6 0%, #6c63ff 100%);
+            box-shadow: 0 4px 16px 0 rgba(108,99,255,0.13);
+            transform: translateY(-1px) scale(1.02);
+        }
+        button:disabled {
+            background: #bfc6e0;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 2em;
+            background: #f6f8fc;
+            padding: 1.2em 1em;
+            border-radius: 10px;
+            min-height: 80px;
+            font-size: 1.08em;
+            color: #2d3a5a;
+            box-shadow: 0 1.5px 6px 0 rgba(60,72,100,0.06);
+            white-space: pre-line;
+        }
+        .error {
+            color: #e74c3c;
+            margin-top: 1em;
+            font-weight: 500;
+            text-align: center;
+        }
+        @media (max-width: 600px) {
+            .container {
+                max-width: 98vw;
+                padding: 1.2em 0.5em 1em 0.5em;
+            }
+            h1 {
+                font-size: 1.3em;
+            }
+        }
+        #procedureCodes, #physicianNotes {
+            max-width: 400px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>After Visit Summary Education</h1>
+        <form id="eduForm">
+            <label for="diagnosis">Diagnosis</label>
+            <select id="diagnosis" name="diagnosis">
+                <option value="">-- Select Diagnosis --</option>
+                <option value="Hypertension">Hypertension</option>
+                <option value="Diabetes Mellitus">Diabetes Mellitus</option>
+                <option value="Asthma">Asthma</option>
+                <option value="Hyperlipidemia">Hyperlipidemia</option>
+                <option value="Other">Other</option>
+            </select>
+            <input type="text" id="diagnosisOther" name="diagnosisOther" placeholder="Enter other diagnosis..." style="display:none; margin-top:0.5em;" />
+
+            <label for="medications">Medications</label>
+            <select id="medications" name="medications">
+                <option value="">-- Select Medication --</option>
+                <option value="Metformin">Metformin</option>
+                <option value="Lisinopril">Lisinopril</option>
+                <option value="Atorvastatin">Atorvastatin</option>
+                <option value="Albuterol">Albuterol</option>
+                <option value="Other">Other</option>
+            </select>
+            <input type="text" id="medicationsOther" name="medicationsOther" placeholder="Enter other medication..." style="display:none; margin-top:0.5em;" />
+
+            <label for="procedureCodes">Procedure Codes (CPT, optional)</label>
+            <input type="text" id="procedureCodes" name="procedureCodes" placeholder="e.g., 99213, 93000">
+
+            <label for="physicianNotes">Physician Notes (optional)</label>
+            <textarea id="physicianNotes" name="physicianNotes" rows="3" placeholder="Add any notes about the recent visit..."></textarea>
+
+            <button type="submit" id="submitBtn">Get Education</button>
+        </form>
+        <div id="loadingNotice" style="display:none; text-align:center; color:#6c63ff; font-weight:600; margin-top:1.5em; font-size:1.1em;">Generating response...</div>
+        <div class="error" id="errorMsg"></div>
+        <div class="result" id="result"></div>
+        <div id="followupSection" style="display:none; margin-top:2em;">
+            <h2 style="font-size:1.1em; color:#2d3a5a; text-align:center; margin-bottom:0.7em;">I am a virtual assistant. What else can I help you with?</h2>
+            <div id="chatHistory" style="background:#f6f8fc; border-radius:10px; padding:1em; min-height:200px; margin-bottom:1em;"></div>
+            <form id="followupForm" style="display:flex; gap:0.5em; align-items:flex-end;">
+                <textarea id="followupInput" rows="2" placeholder="Type your follow-up question..." style="flex:1; resize:vertical;"></textarea>
+                <button type="submit" id="followupBtn">Send</button>
+            </form>
+            <div class="error" id="followupError"></div>
+        </div>
+    </div>
+    <script>
+        const form = document.getElementById('eduForm');
+        const resultDiv = document.getElementById('result');
+        const errorMsg = document.getElementById('errorMsg');
+        const submitBtn = document.getElementById('submitBtn');
+
+        // Use the 'token' parameter from the URL as the OpenAI API key
+        const OPENAI_API_KEY = getUrlParams().token;
+
+        let chatHistoryArr = [];
+        let initialLLMResponse = '';
+        const loadingNotice = document.getElementById('loadingNotice');
+        form.addEventListener('submit', async (e) => {
+            loadingNotice.style.display = 'block';
+            e.preventDefault();
+            errorMsg.textContent = '';
+            resultDiv.textContent = '';
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Loading...';
+            form.style.display = 'none';
+
+            const diagnosisSelect = document.getElementById('diagnosis');
+            const diagnosisOther = document.getElementById('diagnosisOther');
+            const medicationsSelect = document.getElementById('medications');
+            const medicationsOther = document.getElementById('medicationsOther');
+
+            let diagnosis = diagnosisSelect.value;
+            if (diagnosis === 'Other') {
+                diagnosis = diagnosisOther.value;
+            }
+            let medications = medicationsSelect.value;
+            if (medications === 'Other') {
+                medications = medicationsOther.value;
+            }
+
+            const procedureCodes = document.getElementById('procedureCodes').value;
+            const physicianNotes = document.getElementById('physicianNotes').value;
+
+            const prompt = `Patient Education:\nDiagnosis: ${diagnosis}\nMedications: ${medications}\nProcedure Codes: ${procedureCodes}\nPhysician Notes: ${physicianNotes}\nNote: The diagnosis may include ICD codes and the procedure codes may include CPT codes; interpret and explain them appropriately. Do not use technical terms like 'ICD' or 'CPT' in the explanation; use plain language instead.\nPlease provide a detailed, patient-friendly explanation that combines all the information into a single, concise paragraph, rather than breaking it into sections. Use appropriate HTML tags (such as <p>, <strong>, etc.) to format the response for web display.`;
+
+            try {
+                const response = await fetch('https://api.openai.com/v1/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${OPENAI_API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: 'gpt-3.5-turbo-instruct',
+                        prompt: prompt,
+                        max_tokens: 400,
+                        temperature: 0.7
+                    })
+                });
+                if (!response.ok) {
+                    throw new Error('OpenAI API error: ' + response.status);
+                }
+                const data = await response.json();
+                const text = data.choices && data.choices[0] ? data.choices[0].text.trim() : 'No response.';
+                resultDiv.innerHTML = text;
+                initialLLMResponse = text;
+                // Show follow-up section and reset chat history
+                document.getElementById('followupSection').style.display = 'block';
+                chatHistoryArr = [];
+                document.getElementById('chatHistory').innerHTML = '';
+            } catch (err) {
+                errorMsg.textContent = err.message;
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Get Education';
+                loadingNotice.style.display = 'none';
+            }
+        });
+
+        // Follow-up chat logic
+        const followupForm = document.getElementById('followupForm');
+        const followupInput = document.getElementById('followupInput');
+        const followupBtn = document.getElementById('followupBtn');
+        const followupError = document.getElementById('followupError');
+        const chatHistoryDiv = document.getElementById('chatHistory');
+
+        followupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            followupError.textContent = '';
+            const question = followupInput.value.trim();
+            if (!question) return;
+            followupBtn.disabled = true;
+            followupBtn.textContent = 'Sending...';
+
+            // Add user message to chat history
+            chatHistoryArr.push({ sender: 'user', text: question });
+            renderChatHistory();
+
+            // Compose context for LLM, including the initial LLM response
+            let context = `Patient Education:\nDiagnosis: ${diagnosis}\nMedications: ${medications}\nProcedure Codes: ${procedureCodes}\nPhysician Notes: ${physicianNotes}`;
+            if (initialLLMResponse) {
+                context += `\n\nOriginal Explanation (for reference):\n${initialLLMResponse}`;
+            }
+            context += '\nPrevious Q&A:';
+            chatHistoryArr.forEach(msg => {
+                if (msg.sender === 'user') context += `\nQ: ${msg.text}`;
+                else if (msg.sender === 'llm') context += `\nA: ${msg.text.replace(/\n/g, ' ')}`;
+            });
+            context += `\nFollow-up Question: ${question}`;
+            context += '\nNote: The diagnosis may include ICD codes and the procedure codes may include CPT codes; interpret and explain them appropriately. Do not use technical terms like \'ICD\' or \'CPT\' in the explanation; use plain language instead. Keep your answer brief and avoid medical jargon. Only answer the last follow-up question from the patient; use the history and context above for reference only, and do not repeat anything unless it directly pertains to the last follow-up question. Keep the response to a short paragraph and do not break it into different sections.';
+            context += '\nPlease provide a patient-friendly answer in a single, concise paragraph, using appropriate HTML tags (such as <p>, <strong>, etc.) to format the response for web display.';
+
+            try {
+                const response = await fetch('https://api.openai.com/v1/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${OPENAI_API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: 'gpt-3.5-turbo-instruct',
+                        prompt: context,
+                        max_tokens: 400,
+                        temperature: 0.7
+                    })
+                });
+                if (!response.ok) {
+                    throw new Error('OpenAI API error: ' + response.status);
+                }
+                const data = await response.json();
+                const text = data.choices && data.choices[0] ? data.choices[0].text.trim() : 'No response.';
+                chatHistoryArr.push({ sender: 'llm', text });
+                renderChatHistory();
+                followupInput.value = '';
+            } catch (err) {
+                followupError.textContent = err.message;
+            } finally {
+                followupBtn.disabled = false;
+                followupBtn.textContent = 'Send';
+            }
+        });
+
+        function renderChatHistory() {
+            chatHistoryDiv.innerHTML = chatHistoryArr.map(msg =>
+                msg.sender === 'user'
+                    ? `<div style='margin-bottom:0.5em;'><strong>You:</strong> ${msg.text}</div>`
+                    : `<div style='margin-bottom:0.7em; background:#e9eafc; border-radius:7px; padding:0.7em 0.8em;'><strong>AI:</strong> <span>${msg.text}</span></div>`
+            ).join('');
+            chatHistoryDiv.scrollTop = chatHistoryDiv.scrollHeight;
+        }
+
+        // Show/hide 'Other' input for diagnosis
+        document.getElementById('diagnosis').addEventListener('change', function() {
+            document.getElementById('diagnosisOther').style.display = this.value === 'Other' ? 'block' : 'none';
+        });
+        // Show/hide 'Other' input for medications
+        document.getElementById('medications').addEventListener('change', function() {
+            document.getElementById('medicationsOther').style.display = this.value === 'Other' ? 'block' : 'none';
+        });
+
+        // Helper to get URL parameters
+        function getUrlParams() {
+            const params = {};
+            window.location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m, key, value) {
+                params[decodeURIComponent(key)] = decodeURIComponent(value.replace(/\+/g, ' '));
+            });
+            return params;
+        }
+
+        // Auto-populate form and trigger education if URL params exist
+        window.addEventListener('DOMContentLoaded', async () => {
+            const params = getUrlParams();
+            let hasAny = false;
+            // Diagnosis
+            if (params.diagnosis) {
+                const diagSelect = document.getElementById('diagnosis');
+                let found = false;
+                for (let opt of diagSelect.options) {
+                    if (opt.value.toLowerCase() === params.diagnosis.toLowerCase()) {
+                        diagSelect.value = opt.value;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    diagSelect.value = 'Other';
+                    document.getElementById('diagnosisOther').style.display = 'block';
+                    document.getElementById('diagnosisOther').value = params.diagnosis;
+                }
+                hasAny = true;
+            }
+            // Medications
+            if (params.medications) {
+                const medSelect = document.getElementById('medications');
+                let found = false;
+                for (let opt of medSelect.options) {
+                    if (opt.value.toLowerCase() === params.medications.toLowerCase()) {
+                        medSelect.value = opt.value;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    medSelect.value = 'Other';
+                    document.getElementById('medicationsOther').style.display = 'block';
+                    document.getElementById('medicationsOther').value = params.medications;
+                }
+                hasAny = true;
+            }
+            // Procedure Codes
+            if (params.procedureCodes) {
+                document.getElementById('procedureCodes').value = params.procedureCodes;
+                hasAny = true;
+            }
+            // Physician Notes
+            if (params.physicianNotes) {
+                document.getElementById('physicianNotes').value = params.physicianNotes;
+                hasAny = true;
+            }
+            // If any param exists, auto-submit the form
+            if (hasAny) {
+                // Wait a tick for DOM updates
+                setTimeout(() => {
+                    document.getElementById('eduForm').style.display = 'none';
+                    loadingNotice.style.display = 'block';
+                    document.getElementById('eduForm').dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                }, 100);
+            }
+        });
+
+        // --- Token-required access control ---
+        function checkToken() {
+            const params = getUrlParams();
+            if (!params.token) {
+                document.body.innerHTML = '<div style="display:flex;justify-content:center;align-items:center;height:100vh;"><div style="background:#fff;padding:2em 2.5em;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.08);font-size:1.3em;color:#b00;font-weight:600;">Access Denied: Missing token parameter.</div></div>';
+                return false;
+            }
+            return true;
+        }
+        if (!checkToken()) { throw new Error('Access Denied'); }
+    </script>
+</body>
+</html> 
